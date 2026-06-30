@@ -49,10 +49,10 @@ lv_obj_t *screen_splash;
 lv_obj_t *screen_main;
 lv_style_t global_style;
 
-#define LBL_X 14
-#define VAL_X 80
-#define ROW0  50
-#define ROWP  27
+#define LBL_X 10
+#define VAL_X 62
+#define ROW0  34
+#define ROWP  22
 
 static lv_obj_t *cursor_obj;
 static lv_obj_t *scan_obj;
@@ -96,18 +96,18 @@ lv_obj_t *zmk_display_status_screen() {
     lv_obj_clear_flag(screen_main, LV_OBJ_FLAG_SCROLLABLE);
 
     lv_style_init(&global_style);
-    lv_style_set_text_font(&global_style, &lv_font_unscii_16);
+    lv_style_set_text_font(&global_style, &lv_font_unscii_8);
     lv_style_set_text_color(&global_style, DG_FG);
     lv_obj_add_style(screen_main, &global_style, LV_PART_MAIN);
 
     /* header prompt + blinking cursor */
-    make_label(screen_main, "qube@k03:~$ status", LBL_X, 12, DG_ACCENT);
-    cursor_obj = make_rect(screen_main, LBL_X + 18 * 8 + 4, 12, 8, 16, DG_ACCENT, 255);
+    make_label(screen_main, "k03:~$ status", LBL_X, 8, DG_ACCENT);
+    cursor_obj = make_rect(screen_main, LBL_X + 13 * 8 + 4, 8, 8, 8, DG_ACCENT, 255);
     lv_timer_create(cursor_blink_cb, 530, NULL);
 
     /* dividers */
-    make_rect(screen_main, LBL_X, 36, 252, 1, DG_ACCENT, 110);
-    make_rect(screen_main, VAL_X - 12, ROW0 - 2, 1, ROWP * 5 + 18, DG_ACCENT, 70);
+    make_rect(screen_main, LBL_X, 22, 220, 1, DG_ACCENT, 110);
+    make_rect(screen_main, VAL_X - 10, ROW0 - 2, 1, ROWP * 5 + 12, DG_ACCENT, 70);
 
     /* row labels */
     make_label(screen_main, "layer", LBL_X, ROW0 + 0 * ROWP, DG_LABEL);
@@ -151,7 +151,7 @@ lv_obj_t *zmk_display_status_screen() {
 #endif
 
     /* sweeping scanline */
-    scan_obj = make_rect(screen_main, LBL_X, ROW0 - 4, 252, 2, DG_ACCENT, 80);
+    scan_obj = make_rect(screen_main, LBL_X, ROW0 - 4, 220, 2, DG_ACCENT, 80);
     lv_anim_t a;
     lv_anim_init(&a);
     lv_anim_set_var(&a, scan_obj);

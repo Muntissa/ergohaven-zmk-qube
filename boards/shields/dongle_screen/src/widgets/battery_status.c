@@ -56,10 +56,10 @@ static void render(lv_obj_t *label) {
     int idx = 0;
     for (int i = 0; i < NBAT; ++i) {
         if (bat_level[i] > 0)
-            idx += snprintf(&text[idx], sizeof(text) - idx, "%s%s %d%%", i ? "  " : "", bat_name(i),
+            idx += snprintf(&text[idx], sizeof(text) - idx, "%s%s%d", i ? " " : "", bat_name(i),
                             bat_level[i]);
         else
-            idx += snprintf(&text[idx], sizeof(text) - idx, "%s%s --", i ? "  " : "", bat_name(i));
+            idx += snprintf(&text[idx], sizeof(text) - idx, "%s%s?", i ? " " : "", bat_name(i));
     }
     lv_label_set_text(label, text);
 }

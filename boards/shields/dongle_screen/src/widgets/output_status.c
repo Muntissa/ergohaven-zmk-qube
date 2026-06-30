@@ -41,8 +41,8 @@ static void set_status(struct zmk_widget_output_status *widget, struct output_st
     if (state.selected_endpoint.transport == ZMK_TRANSPORT_USB) {
         snprintf(buf, sizeof(buf), "usb");
     } else {
-        snprintf(buf, sizeof(buf), "ble p%d%s", state.active_profile_index + 1,
-                 state.active_profile_connected ? "" : " ...");
+        snprintf(buf, sizeof(buf), "ble%d%s", state.active_profile_index + 1,
+                 state.active_profile_connected ? "" : "~");
     }
     lv_label_set_text(widget->obj, buf);
 }

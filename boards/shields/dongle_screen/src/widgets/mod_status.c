@@ -21,15 +21,15 @@ static void update_mod_status(struct zmk_widget_mod_status *widget)
     char text[48] = "";
     int idx = 0;
     if (indicators & LED_CLCK)
-        idx += snprintf(&text[idx], sizeof(text) - idx, "[caps] ");
+        idx += snprintf(&text[idx], sizeof(text) - idx, "cap ");
     if (mods & (MOD_LCTL | MOD_RCTL))
-        idx += snprintf(&text[idx], sizeof(text) - idx, "[ctrl] ");
+        idx += snprintf(&text[idx], sizeof(text) - idx, "ctl ");
     if (mods & (MOD_LSFT | MOD_RSFT))
-        idx += snprintf(&text[idx], sizeof(text) - idx, "[shift] ");
+        idx += snprintf(&text[idx], sizeof(text) - idx, "sft ");
     if (mods & (MOD_LALT | MOD_RALT))
-        idx += snprintf(&text[idx], sizeof(text) - idx, "[alt] ");
+        idx += snprintf(&text[idx], sizeof(text) - idx, "alt ");
     if (mods & (MOD_LGUI | MOD_RGUI))
-        idx += snprintf(&text[idx], sizeof(text) - idx, mac ? "[cmd] " : "[win] ");
+        idx += snprintf(&text[idx], sizeof(text) - idx, mac ? "cmd " : "win ");
 
     lv_label_set_text(widget->obj, idx ? text : "--");
 }
