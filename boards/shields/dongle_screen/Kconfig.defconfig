@@ -162,4 +162,15 @@ config QUBE_HID_RU_LAYER
     int "Russian layer"
     default 1
 
+config DONGLE_SCREEN_OS_ACTIVE
+    bool "OS indicator widget active"
+    default y
+
+config DONGLE_SCREEN_OS_MAC_LAYER
+    int "Layer index that represents macOS mode"
+    default 1
+    help
+      When this layer is active the screen shows the Apple logo and the macOS
+      command glyph; otherwise it shows the Windows logo.
+
 endif

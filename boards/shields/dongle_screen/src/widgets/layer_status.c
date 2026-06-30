@@ -38,6 +38,7 @@ static void set_layer_symbol(lv_obj_t *label, struct layer_status_state state)
             snprintf(text, sizeof(text), "  %s", state.label);
     }
     lv_label_set_text(label, text);
+    lv_obj_fade_in(label, 200, 0);
 }
 
 static void layer_status_update_cb(struct layer_status_state state)

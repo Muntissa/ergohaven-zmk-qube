@@ -31,12 +31,19 @@ static struct zmk_widget_wpm_status wpm_status_widget;
 static struct zmk_widget_mod_status mod_widget;
 #endif
 
+#if CONFIG_DONGLE_SCREEN_OS_ACTIVE
+#include "widgets/os_status.h"
+static struct zmk_widget_os_status os_status_widget;
+#endif
+
 #include <zephyr/logging/log.h>
 LOG_MODULE_DECLARE(zmk, CONFIG_ZMK_LOG_LEVEL);
 
 #include "fonts.h"
 
 LV_IMG_DECLARE(eh_robot);
+
+#define DONGLE_ACCENT lv_color_hex(0x22D3EE)
 
 lv_obj_t *screen_splash;
 lv_obj_t *screen_main;
@@ -74,17 +81,24 @@ lv_obj_t *zmk_display_status_screen()
 
 #if CONFIG_DONGLE_SCREEN_WPM_ACTIVE
     zmk_widget_wpm_status_init(&wpm_status_widget, screen_main);
-    lv_obj_align(zmk_widget_wpm_status_obj(&wpm_status_widget), LV_ALIGN_TOP_LEFT, 20, 20);
+    lv_obj_align(zmk_widget_wpm_status_obj(&wpm_status_widget), LV_ALIGN_BOTTOM_LEFT, 20, -12);
 #endif
 
 #if CONFIG_DONGLE_SCREEN_LAYER_ACTIVE
     zmk_widget_layer_status_init(&layer_status_widget, screen_main);
-    lv_obj_align(zmk_widget_layer_status_obj(&layer_status_widget), LV_ALIGN_CENTER, 0, 0);
+    lv_obj_align(zmk_widget_layer_status_obj(&layer_status_widget), LV_ALIGN_CENTER, 0, -8);
+    lv_obj_set_style_text_color(zmk_widget_layer_status_obj(&layer_status_widget), DONGLE_ACCENT, 0);
 #endif
 
 #if CONFIG_DONGLE_SCREEN_MODIFIER_ACTIVE
     zmk_widget_mod_status_init(&mod_widget, screen_main);
     lv_obj_align(zmk_widget_mod_status_obj(&mod_widget), LV_ALIGN_CENTER, 0, 50);
+#endif
+
+#if CONFIG_DONGLE_SCREEN_OS_ACTIVE
+    zmk_widget_os_status_init(&os_status_widget, screen_main);
+    lv_obj_align(zmk_widget_os_status_obj(&os_status_widget), LV_ALIGN_TOP_LEFT, 16, 14);
+    lv_obj_set_style_text_color(zmk_widget_os_status_obj(&os_status_widget), DONGLE_ACCENT, 0);
 #endif
 
     k_timer_start(&screen_main_timer, K_SECONDS(2), K_NO_WAIT);
@@ -97,6 +111,7 @@ lv_obj_t *zmk_display_status_screen()
     lv_obj_t *img = lv_img_create(screen_splash);
     lv_img_set_src(img, &eh_robot);
     lv_obj_align(img, LV_ALIGN_CENTER, 0, 0);
+    lv_obj_fade_in(img, 700, 150);
     // lv_obj_set_style_pad_top(img, 60, 0);
     // lv_obj_set_style_pad_bottom(img, 60, 0);
 
