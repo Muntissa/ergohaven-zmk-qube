@@ -50,7 +50,6 @@ lv_obj_t *screen_main;
 lv_style_t global_style;
 
 #define LBL_X 10
-#define VAL_X 62
 #define ROW0  36
 #define ROWP  26
 
@@ -82,11 +81,12 @@ static lv_obj_t *make_rect(lv_obj_t *parent, int x, int y, int w, int h, lv_colo
     return o;
 }
 
-static void make_label(lv_obj_t *parent, const char *txt, int x, int y, lv_color_t color) {
+static lv_obj_t *make_label(lv_obj_t *parent, const char *txt, int x, int y, lv_color_t color) {
     lv_obj_t *l = lv_label_create(parent);
     lv_label_set_text(l, txt);
     lv_obj_set_style_text_color(l, color, 0);
     lv_obj_set_pos(l, x, y);
+    return l;
 }
 
 lv_obj_t *zmk_display_status_screen() {
@@ -100,53 +100,64 @@ lv_obj_t *zmk_display_status_screen() {
     lv_style_set_text_color(&global_style, DG_FG);
     lv_obj_add_style(screen_main, &global_style, LV_PART_MAIN);
 
-    /* header prompt + blinking cursor */
-    make_label(screen_main, "k03:~$ status", LBL_X, 10, DG_ACCENT);
-    cursor_obj = make_rect(screen_main, LBL_X + 13 * 8 + 4, 10, 8, 16, DG_ACCENT, 255);
-    lv_timer_create(cursor_blink_cb, 530, NULL);
-
-    /* dividers */
-    make_rect(screen_main, LBL_X, 30, 220, 1, DG_ACCENT, 110);
-    make_rect(screen_main, VAL_X - 10, ROW0 - 2, 1, ROWP * 5 + 12, DG_ACCENT, 70);
-
-    /* row labels */
-    make_label(screen_main, "layer", LBL_X, ROW0 + 0 * ROWP, DG_LABEL);
+    /* header + row labels (positions of values are measured, not hard-coded) */
+    lv_obj_t *hdr = make_label(screen_main, "k03:~$ status", LBL_X, 10, DG_ACCENT);
+    lv_obj_t *l_layer = make_label(screen_main, "layer", LBL_X, ROW0 + 0 * ROWP, DG_LABEL);
     make_label(screen_main, "mods", LBL_X, ROW0 + 1 * ROWP, DG_LABEL);
     make_label(screen_main, "wpm", LBL_X, ROW0 + 2 * ROWP, DG_LABEL);
     make_label(screen_main, "conn", LBL_X, ROW0 + 3 * ROWP, DG_LABEL);
     make_label(screen_main, "batt", LBL_X, ROW0 + 4 * ROWP, DG_LABEL);
     make_label(screen_main, "os", LBL_X, ROW0 + 5 * ROWP, DG_LABEL);
 
+    lv_obj_update_layout(screen_main);
+    lv_coord_t lw = lv_obj_get_width(l_layer);
+    if (lw < 24) {
+        lw = 40;
+    }
+    lv_coord_t valx = LBL_X + lw + 16;
+    lv_coord_t hw = lv_obj_get_width(hdr);
+    if (hw < 24) {
+        hw = 104;
+    }
+
+    /* blinking cursor right after the prompt */
+    cursor_obj = make_rect(screen_main, LBL_X + hw + 4, 10, 8, 16, DG_ACCENT, 255);
+    lv_timer_create(cursor_blink_cb, 530, NULL);
+
+    /* dividers */
+    make_rect(screen_main, LBL_X, 30, 220, 1, DG_ACCENT, 110);
+    make_rect(screen_main, valx - 10, ROW0 - 2, 1, ROWP * 5 + 12, DG_ACCENT, 70);
+
 #if CONFIG_DONGLE_SCREEN_LAYER_ACTIVE
     zmk_widget_layer_status_init(&layer_status_widget, screen_main);
-    lv_obj_set_pos(zmk_widget_layer_status_obj(&layer_status_widget), VAL_X, ROW0 + 0 * ROWP);
+    lv_obj_set_pos(zmk_widget_layer_status_obj(&layer_status_widget), valx, ROW0 + 0 * ROWP);
     lv_obj_set_style_text_color(zmk_widget_layer_status_obj(&layer_status_widget), DG_ACCENT, 0);
 #endif
 
 #if CONFIG_DONGLE_SCREEN_MODIFIER_ACTIVE
     zmk_widget_mod_status_init(&mod_widget, screen_main);
-    lv_obj_set_pos(zmk_widget_mod_status_obj(&mod_widget), VAL_X, ROW0 + 1 * ROWP);
+    lv_obj_set_pos(zmk_widget_mod_status_obj(&mod_widget), valx, ROW0 + 1 * ROWP);
 #endif
 
 #if CONFIG_DONGLE_SCREEN_WPM_ACTIVE
     zmk_widget_wpm_status_init(&wpm_status_widget, screen_main);
-    lv_obj_set_pos(zmk_widget_wpm_status_obj(&wpm_status_widget), VAL_X, ROW0 + 2 * ROWP);
+    lv_obj_set_pos(zmk_widget_wpm_status_obj(&wpm_status_widget), valx, ROW0 + 2 * ROWP);
 #endif
 
 #if CONFIG_DONGLE_SCREEN_OUTPUT_ACTIVE
     zmk_widget_output_status_init(&output_status_widget, screen_main);
-    lv_obj_set_pos(zmk_widget_output_status_obj(&output_status_widget), VAL_X, ROW0 + 3 * ROWP);
+    lv_obj_set_pos(zmk_widget_output_status_obj(&output_status_widget), valx, ROW0 + 3 * ROWP);
 #endif
 
 #if CONFIG_DONGLE_SCREEN_BATTERY_ACTIVE
     zmk_widget_dongle_battery_status_init(&dongle_battery_status_widget, screen_main);
-    lv_obj_set_pos(zmk_widget_dongle_battery_status_obj(&dongle_battery_status_widget), VAL_X,
+    lv_obj_set_pos(zmk_widget_dongle_battery_status_obj(&dongle_battery_status_widget), valx,
                    ROW0 + 4 * ROWP);
 #endif
 
 #if CONFIG_DONGLE_SCREEN_OS_ACTIVE
     zmk_widget_os_status_init(&os_status_widget, screen_main);
-    lv_obj_set_pos(zmk_widget_os_status_obj(&os_status_widget), VAL_X, ROW0 + 5 * ROWP - 4);
+    lv_obj_set_pos(zmk_widget_os_status_obj(&os_status_widget), valx, ROW0 + 5 * ROWP - 4);
     lv_obj_set_style_text_color(zmk_widget_os_status_obj(&os_status_widget), DG_ACCENT, 0);
 #endif
 
