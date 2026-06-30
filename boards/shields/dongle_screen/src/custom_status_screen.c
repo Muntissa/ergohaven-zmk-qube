@@ -51,8 +51,8 @@ lv_style_t global_style;
 
 #define LBL_X 10
 #define VAL_X 62
-#define ROW0  34
-#define ROWP  22
+#define ROW0  36
+#define ROWP  26
 
 static lv_obj_t *cursor_obj;
 static lv_obj_t *scan_obj;
@@ -96,17 +96,17 @@ lv_obj_t *zmk_display_status_screen() {
     lv_obj_clear_flag(screen_main, LV_OBJ_FLAG_SCROLLABLE);
 
     lv_style_init(&global_style);
-    lv_style_set_text_font(&global_style, &lv_font_unscii_8);
+    lv_style_set_text_font(&global_style, &lv_font_unscii_16);
     lv_style_set_text_color(&global_style, DG_FG);
     lv_obj_add_style(screen_main, &global_style, LV_PART_MAIN);
 
     /* header prompt + blinking cursor */
-    make_label(screen_main, "k03:~$ status", LBL_X, 8, DG_ACCENT);
-    cursor_obj = make_rect(screen_main, LBL_X + 13 * 8 + 4, 8, 8, 8, DG_ACCENT, 255);
+    make_label(screen_main, "k03:~$ status", LBL_X, 10, DG_ACCENT);
+    cursor_obj = make_rect(screen_main, LBL_X + 13 * 8 + 4, 10, 8, 16, DG_ACCENT, 255);
     lv_timer_create(cursor_blink_cb, 530, NULL);
 
     /* dividers */
-    make_rect(screen_main, LBL_X, 22, 220, 1, DG_ACCENT, 110);
+    make_rect(screen_main, LBL_X, 30, 220, 1, DG_ACCENT, 110);
     make_rect(screen_main, VAL_X - 10, ROW0 - 2, 1, ROWP * 5 + 12, DG_ACCENT, 70);
 
     /* row labels */
