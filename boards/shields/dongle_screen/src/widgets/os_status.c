@@ -51,7 +51,7 @@ ZMK_SUBSCRIPTION(widget_os_status, zmk_layer_state_changed);
 
 int zmk_widget_os_status_init(struct zmk_widget_os_status *widget, lv_obj_t *parent) {
     widget->obj = lv_label_create(parent);
-    lv_obj_set_style_text_font(widget->obj, &nerd_fonts_big, 0);
+    lv_obj_set_style_text_font(widget->obj, &nerd_fonts_small, 0);
     lv_label_set_text(widget->obj, OS_GLYPH_WIN);
     sys_slist_append(&widgets, &widget->node);
 

@@ -37,36 +37,39 @@ struct battery_state {
     bool usb_present;
 };
 
-char battery_text[NBAT][24];
+static uint8_t bat_level[NBAT];
+
+static const char *bat_name(int i) {
+#if SOURCE_OFFSET
+    if (i == 0) {
+        return "dgl";
+    }
+#endif
+    int p = i - SOURCE_OFFSET;
+    if (p == 0) return "L";
+    if (p == 1) return "R";
+    return "p";
+}
+
+static void render(lv_obj_t *label) {
+    char text[48] = "";
+    int idx = 0;
+    for (int i = 0; i < NBAT; ++i) {
+        if (bat_level[i] > 0)
+            idx += snprintf(&text[idx], sizeof(text) - idx, "%s%s %d%%", i ? "  " : "", bat_name(i),
+                            bat_level[i]);
+        else
+            idx += snprintf(&text[idx], sizeof(text) - idx, "%s%s --", i ? "  " : "", bat_name(i));
+    }
+    lv_label_set_text(label, text);
+}
 
 static void set_battery_symbol(lv_obj_t *label, struct battery_state state) {
-    LOG_DBG("source: %d, level: %d, usb: %d", state.source, state.level, state.usb_present);
-
     if (state.source >= NBAT) {
         return;
     }
-
-    const char* BAT_ICON[] = {"󰂎", "󰁺", "󰁻", "󰁼", "󰁽", "󰁾", "󰁿", "󰂀", "󰂁", "󰂂", "󰁹"};
-    const char* bat_icon = BAT_ICON[state.level / 10];
-
-    const char* bat_color = "ffffff";
-    if (state.level < 5)
-        bat_color = "ff0000";
-    else if (state.level < 10)
-        bat_color = "ffff00";
-
-    if (state.level > 0)
-        snprintf(battery_text[state.source], sizeof(battery_text[state.source]),
-            "#%s %s %i#", bat_color, bat_icon, state.level);
-    else
-        snprintf(battery_text[state.source], sizeof(battery_text[state.source]),
-            "#%s %s ?#", bat_color, bat_icon);
-    char text[NBAT*sizeof(battery_text[0])] = "";
-    int idx = 0;
-    for (int i = 0; i < NBAT; ++i)
-        idx += snprintf(&text[idx], sizeof(text) - idx, "%s%s", i == 0 ? "" : "  ", battery_text[i]);
-
-    lv_label_set_text(label, idx ? text : "");
+    bat_level[state.source] = state.level;
+    render(label);
 }
 
 void battery_status_update_cb(struct battery_state state) {
@@ -85,12 +88,12 @@ static struct battery_state peripheral_battery_status_get_state(const zmk_event_
 
 static struct battery_state central_battery_status_get_state(const zmk_event_t *eh) {
     const struct zmk_battery_state_changed *ev = as_zmk_battery_state_changed(eh);
-    return (struct battery_state) {
+    return (struct battery_state){
         .source = 0,
         .level = (ev != NULL) ? ev->state_of_charge : zmk_battery_state_of_charge(),
 #if IS_ENABLED(CONFIG_USB_DEVICE_STACK)
         .usb_present = zmk_usb_is_powered(),
-#endif /* IS_ENABLED(CONFIG_USB_DEVICE_STACK) */
+#endif
     };
 }
 
@@ -109,32 +112,23 @@ ZMK_SUBSCRIPTION(widget_dongle_battery_status, zmk_peripheral_battery_state_chan
 
 #if IS_ENABLED(CONFIG_ZMK_DONGLE_DISPLAY_DONGLE_BATTERY)
 #if !IS_ENABLED(CONFIG_ZMK_SPLIT) || IS_ENABLED(CONFIG_ZMK_SPLIT_ROLE_CENTRAL)
-
 ZMK_SUBSCRIPTION(widget_dongle_battery_status, zmk_battery_state_changed);
 #if IS_ENABLED(CONFIG_USB_DEVICE_STACK)
 ZMK_SUBSCRIPTION(widget_dongle_battery_status, zmk_usb_conn_state_changed);
-#endif /* IS_ENABLED(CONFIG_USB_DEVICE_STACK) */
-#endif /* !IS_ENABLED(CONFIG_ZMK_SPLIT) || IS_ENABLED(CONFIG_ZMK_SPLIT_ROLE_CENTRAL) */
-#endif /* IS_ENABLED(CONFIG_ZMK_DONGLE_DISPLAY_DONGLE_BATTERY) */
+#endif
+#endif
+#endif
 
-int zmk_widget_dongle_battery_status_init(struct zmk_widget_dongle_battery_status *widget, lv_obj_t *parent) {
-    widget->obj = lv_obj_create(parent);
-    lv_obj_set_size(widget->obj, 286, 40);
-
-    widget->label = lv_label_create(widget->obj);
-    lv_obj_align(widget->label, LV_ALIGN_CENTER, 0, 0);
-    lv_obj_set_style_text_font(widget->label, &nerd_fonts_small, 0);
-    lv_label_set_recolor(widget->label, true);
-
-    for (int i = 0; i < NBAT; ++i)
-        set_battery_symbol(
-            widget->label,
-            (struct battery_state){.source = i, .level = 0, .usb_present = false});
-
+int zmk_widget_dongle_battery_status_init(struct zmk_widget_dongle_battery_status *widget,
+                                          lv_obj_t *parent) {
+    widget->obj = lv_label_create(parent);
+    widget->label = widget->obj;
+    for (int i = 0; i < NBAT; ++i) {
+        bat_level[i] = 0;
+    }
+    render(widget->obj);
     sys_slist_append(&widgets, &widget->node);
-
     widget_dongle_battery_status_init();
-
     return 0;
 }
 
